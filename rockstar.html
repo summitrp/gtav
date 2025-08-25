@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rockstar Games Launcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .launcher-container {
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 40px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #333;
+        }
+
+        .rockstar-logo {
+            height: 40px;
+            transition: transform 0.3s ease;
+        }
+
+        .rockstar-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .main-content {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        .left-panel {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.1));
+        }
+
+        .gta-logo {
+            max-width: 400px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.3));
+            transition: transform 0.3s ease;
+        }
+
+        .gta-logo:hover {
+            transform: scale(1.02);
+        }
+
+        .game-info {
+            margin-bottom: 40px;
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ffd700, #ff8c00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .game-description {
+            font-size: 1.1rem;
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .launch-button {
+            background: linear-gradient(45deg, #ffd700, #ff8c00);
+            border: none;
+            padding: 15px 60px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #000;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            width: fit-content;
+        }
+
+        .launch-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.6);
+        }
+
+        .launch-button:active {
+            transform: translateY(0);
+        }
+
+        .launch-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .launch-button:hover::before {
+            left: 100%;
+        }
+
+        .right-panel {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner-image {
+            width: 100%;
+            height: 70%;
+            object-fit: cover;
+            border-radius: 10px 0 0 0;
+            transition: transform 0.3s ease;
+        }
+
+        .banner-image:hover {
+            transform: scale(1.02);
+        }
+
+        .artwork-section {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid #333;
+        }
+
+        .artwork-image {
+            width: 150px;
+            height: auto;
+            border-radius: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .artwork-image:hover {
+            transform: scale(1.05);
+        }
+
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .video-container {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .video-player {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .close-button {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .close-button:hover {
+            background: #ff6666;
+        }
+
+        .loading {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .status-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .left-panel, .right-panel {
+                flex: none;
+            }
+            
+            .header {
+                padding: 15px 20px;
+            }
+            
+            .left-panel {
+                padding: 20px;
+            }
+            
+            .gta-logo {
+                max-width: 300px;
+            }
+            
+            .game-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="launcher-container">
+        <header class="header">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Rockstar_Games_Logo.svg/800px-Rockstar_Games_Logo.svg.png" alt="Rockstar Games" class="rockstar-logo">
+            <div style="font-size: 0.9rem; color: #888;">Rockstar Games Launcher</div>
+        </header>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <img src="https://logos-world.net/wp-content/uploads/2021/02/Grand-Theft-Auto-V-GTA-5-Logo.png" alt="GTA V Logo" class="gta-logo">
+                
+                <div class="game-info">
+                    <h1 class="game-title">Grand Theft Auto V</h1>
+                    <p class="game-description">
+                        Experience the award-winning world of Los Santos and Blaine County with over 100 hours of gameplay, including the complete Grand Theft Auto V story and access to Grand Theft Auto Online.
+                    </p>
+                </div>
+
+                <button class="launch-button" onclick="launchGame()">
+                    ▶ LAUNCH GAME
+                </button>
+            </div>
+
+            <div class="right-panel">
+                <img src="https://cdn.mos.cms.futurecdn.net/XFrWHyfNRsjSGAagPtgFom.jpg" alt="GTA V Banner" class="banner-image">
+                
+                <div class="artwork-section">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a5/Grand_Theft_Auto_V.png/250px-Grand_Theft_Auto_V.png" alt="GTA V Artwork" class="artwork-image">
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            Ready to play • Last played: Never • Version: 1.0.2845.14
+        </div>
+
+        <div class="video-overlay" id="videoOverlay">
+            <div class="video-container">
+                <button class="close-button" onclick="closeVideo()">×</button>
+                <video class="video-player" id="gameVideo" controls>
+                    <source src="video1.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function launchGame() {
+            const button = document.querySelector('.launch-button');
+            const overlay = document.getElementById('videoOverlay');
+            const video = document.getElementById('gameVideo');
+
+            // Add loading animation
+            button.classList.add('loading');
+            button.innerHTML = '⟳ LAUNCHING...';
+            
+            // Simulate loading time
+            setTimeout(() => {
+                overlay.style.display = 'flex';
+                video.play().catch(e => {
+                    console.log('Video autoplay prevented:', e);
+                    alert('Please click the play button to start the video.');
+                });
+                
+                // Reset button
+                button.classList.remove('loading');
+                button.innerHTML = '▶ LAUNCH GAME';
+            }, 1500);
+        }
+
+        function closeVideo() {
+            const overlay = document.getElementById('videoOverlay');
+            const video = document.getElementById('gameVideo');
+            
+            video.pause();
+            video.currentTime = 0;
+            overlay.style.display = 'none';
+        }
+
+        // Close video when clicking outside
+        document.getElementById('videoOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeVideo();
+            }
+        });
+
+        // Keyboard controls
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeVideo();
+            }
+        });
+
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate elements on load
+            const elements = document.querySelectorAll('.gta-logo, .game-info, .launch-button');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+
+            // Update status bar
+            setInterval(() => {
+                const now = new Date();
+                const statusBar = document.querySelector('.status-bar');
+                statusBar.innerHTML = `Ready to play • Current time: ${now.toLocaleTimeString()} • Version: 1.0.2845.14`;
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
