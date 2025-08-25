@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Prompt</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background: #0c0c0c;
+            color: #cccccc;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .window {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #464647;
+        }
+
+        .titlebar {
+            background: #ffffff;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+            user-select: none;
+            border-bottom: 1px solid #d1d1d1;
+        }
+
+        .title-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .app-icon {
+            width: 16px;
+            height: 16px;
+            background-image: url('https://developer.valvesoftware.com/w/images/7/71/Icon-CMD.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .title-text {
+            font-size: 12px;
+            color: #000000;
+            font-weight: normal;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 0;
+        }
+
+        .control-button {
+            width: 46px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: #000000;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.1s;
+        }
+
+        .control-button:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .control-button.close:hover {
+            background: #e81123;
+            color: white;
+        }
+
+        .cmd-content {
+            flex: 1;
+            background: #0c0c0c;
+            padding: 8px;
+            font-size: 12px;
+            line-height: 16px;
+            overflow-y: auto;
+        }
+
+        .prompt-line {
+            display: flex;
+            margin-bottom: 2px;
+        }
+
+        .prompt {
+            color: #cccccc;
+            white-space: nowrap;
+        }
+
+        .cursor {
+            background: #cccccc;
+            width: 8px;
+            height: 16px;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .output {
+            color: #cccccc;
+            margin-bottom: 8px;
+            white-space: pre-wrap;
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .input-field {
+            background: transparent;
+            border: none;
+            color: #cccccc;
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+            flex: 1;
+        }
+
+        .video-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            z-index: 9999;
+            display: none;
+        }
+
+        .video-fullscreen video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <div class="window">
+        <div class="titlebar">
+            <div class="title-left">
+                <div class="app-icon"></div>
+                <span class="title-text">Administrator: C:\WINDOWS\System32\</span>
+            </div>
+            <div class="window-controls">
+                <button class="control-button minimize">⎯</button>
+                <button class="control-button maximize">☐</button>
+                <button class="control-button close">✕</button>
+            </div>
+        </div>
+        
+        <div class="cmd-content">
+            <div class="output">Microsoft Windows [Version 10.0.19045.3570]
+(c) Microsoft Corporation. All rights reserved.</div>
+            
+            <div class="prompt-line">
+                <span class="prompt">C:\Users\User></span>
+                <input type="text" class="input-field" id="cmdInput" autofocus>
+                <div class="cursor" id="cursor"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="video-fullscreen" id="videoPlayer">
+        <video id="gameVideo" controls>
+            <source src="video1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <script>
+        const input = document.getElementById('cmdInput');
+        const cursor = document.getElementById('cursor');
+        const cmdContent = document.querySelector('.cmd-content');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const gameVideo = document.getElementById('gameVideo');
+
+        // Hide cursor when typing
+        input.addEventListener('input', () => {
+            cursor.style.display = input.value ? 'none' : 'block';
+        });
+
+        // Handle command execution
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const command = input.value.trim();
+                
+                // Create command echo
+                const commandEcho = document.createElement('div');
+                commandEcho.className = 'prompt-line';
+                commandEcho.innerHTML = `<span class="prompt">C:\\Users\\User></span>${command}`;
+                
+                // Insert before the input line
+                const inputLine = document.querySelector('.input-line');
+                cmdContent.insertBefore(commandEcho, inputLine);
+                
+                // Process command
+                let response = '';
+                if (command.toLowerCase() === 'launch --offline') {
+                    response = 'Launching offline mode...';
+                    
+                    // Add response first
+                    const output = document.createElement('div');
+                    output.className = 'output';
+                    output.textContent = response;
+                    cmdContent.insertBefore(output, inputLine);
+                    
+                    // Clear input and show cursor
+                    input.value = '';
+                    cursor.style.display = 'block';
+                    cmdContent.scrollTop = cmdContent.scrollHeight;
+                    
+                    // Launch video after a short delay
+                    setTimeout(() => {
+                        videoPlayer.style.display = 'block';
+                        gameVideo.play();
+                        
+                        // Hide video and return to CMD when video ends or on Escape
+                        gameVideo.addEventListener('ended', () => {
+                            videoPlayer.style.display = 'none';
+                            input.focus();
+                        });
+                        
+                        document.addEventListener('keydown', function escapeHandler(e) {
+                            if (e.key === 'Escape' && videoPlayer.style.display === 'block') {
+                                videoPlayer.style.display = 'none';
+                                gameVideo.pause();
+                                input.focus();
+                                document.removeEventListener('keydown', escapeHandler);
+                            }
+                        });
+                    }, 1000);
+                    
+                    return;
+                } else if (command.toLowerCase() === 'dir') {
+                    response = ` Volume in drive C has no label.
+ Volume Serial Number is 1234-5678
+
+ Directory of C:\\Users\\User
+
+08/26/2025  10:30 AM    <DIR>          .
+08/26/2025  10:30 AM    <DIR>          ..
+08/26/2025  09:15 AM    <DIR>          Desktop
+08/26/2025  09:15 AM    <DIR>          Documents
+08/26/2025  09:15 AM    <DIR>          Downloads
+               0 File(s)              0 bytes
+               5 Dir(s)  125,432,832,000 bytes free`;
+                } else if (command.toLowerCase() === 'help') {
+                    response = `For more information on a specific command, type HELP command-name
+ASSOC          Displays or modifies file extension associations.
+ATTRIB         Displays or changes file attributes.
+BREAK          Sets or clears extended CTRL+C checking.
+BCDEDIT        Sets properties in boot database to control boot loading.
+CACLS          Displays or modifies access control lists (ACLs) of files.
+CALL           Calls one batch program from another.
+CD             Displays the name of or changes the current directory.
+CHCP           Displays or sets the active code page number.
+CHDIR          Displays the name of or changes the current directory.
+CHKDSK         Checks a disk and displays a status report.
+CHKNTFS        Displays or modifies the checking of disk at boot time.
+CLS            Clears the screen.
+CMD            Starts a new instance of the Windows command interpreter.`;
+                } else if (command.toLowerCase() === 'cls') {
+                    // Clear screen
+                    const outputs = cmdContent.querySelectorAll('.output, .prompt-line:not(.input-line)');
+                    outputs.forEach(output => output.remove());
+                    input.value = '';
+                    cursor.style.display = 'block';
+                    return;
+                } else if (command.toLowerCase().startsWith('echo ')) {
+                    response = command.substring(5);
+                } else if (command === '') {
+                    // Do nothing for empty command
+                } else {
+                    response = `'${command}' is not recognized as an internal or external command,
+operable program or batch file.`;
+                }
+                
+                if (response) {
+                    const output = document.createElement('div');
+                    output.className = 'output';
+                    output.textContent = response;
+                    cmdContent.insertBefore(output, inputLine);
+                }
+                
+                input.value = '';
+                cursor.style.display = 'block';
+                
+                // Scroll to bottom
+                cmdContent.scrollTop = cmdContent.scrollHeight;
+            }
+        });
+
+        // Window controls functionality
+        document.querySelector('.minimize').addEventListener('click', () => {
+            console.log('Minimize clicked');
+        });
+
+        document.querySelector('.maximize').addEventListener('click', () => {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                document.documentElement.requestFullscreen();
+            }
+        });
+
+        document.querySelector('.close').addEventListener('click', () => {
+            if (confirm('Are you sure you want to close this window?')) {
+                window.close();
+            }
+        });
+    </script>
+</body>
+</html>
